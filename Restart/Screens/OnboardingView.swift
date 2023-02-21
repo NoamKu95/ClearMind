@@ -16,6 +16,8 @@ struct OnboardingView: View {
     @State private var buttonOffset : CGFloat = 0
     @State private var isAnimating : Bool = false
     @State private var imageOffset : CGSize = .zero
+    @State private var indicatorOpacity : Double = 1.0
+    @State private var textTitle : String = "Share."
     
     var body: some View {
         ZStack {
@@ -23,13 +25,15 @@ struct OnboardingView: View {
                 .ignoresSafeArea(.all, edges: .all)
             
             VStack(spacing: 20) {
-                // HEADER
+                // MARK: HEADER
                Spacer()
                 VStack (spacing: 0) {
-                    Text("Share.")
+                    Text(textTitle)
                         .font(.system(size: 60))
                         .fontWeight(.heavy)
                         .foregroundColor(.white)
+                        .transition(.opacity)
+                        .id(textTitle) // to let the textView know it needs to render on text change
                     
                     Text("""
                     It's not about how much we give,
@@ -45,44 +49,69 @@ struct OnboardingView: View {
                 .offset(y: isAnimating ? 0 : -40)
                 .animation(.easeIn(duration: 1), value: isAnimating)
                 
-                // CENTER
+                // MARK: CENTER
                 ZStack {
+                    // MARK: background circles
                     CirclesGroupView(ShapeColor: .white, ShapeOpacity: 0.2)
+                        .offset(x: imageOffset.width * -1) // move the ring in the opposite direction of the image
+                        .blur(radius: abs(imageOffset.width / 5)) // higher blur the more the image moves
+                        .animation(.easeOut(duration: 1), value: imageOffset)
+                    
+                    // MARK: main image
                     Image("character-1")
                         .resizable()
                         .scaledToFit()
                         .opacity(isAnimating ? 1 : 0)
                         .animation(.easeIn(duration: 0.4), value: isAnimating)
-                        .offset(x: imageOffset.width * 1.2, y: 0)
-                        .rotationEffect(.degrees(Double(imageOffset.width / 20)))
+                        .offset(x: imageOffset.width * 1.2, y: 0) // make the image to move right and left
+                        .rotationEffect(.degrees(Double(imageOffset.width / 20))) // make the image rotate white moving horizontaly
                         .gesture(
                             DragGesture()
                                 .onChanged { gesture in
-                                    if abs(imageOffset.width) <= 150 {
+                                    if abs(imageOffset.width) <= 150 { // limit the movement of the image
                                         imageOffset = gesture.translation
+                                        
+                                        withAnimation(.linear(duration: 0.25)) { // hide the indicator icon once gesture starts
+                                            indicatorOpacity = 0
+                                            textTitle = "Give."
+                                        }
                                     }
                                 }
                                 .onEnded{ _ in
-                                    imageOffset = .zero
+                                    imageOffset = .zero // reset image to original position
+                                    
+                                    withAnimation(.linear(duration: 0.25)) {
+                                        indicatorOpacity = 1
+                                        textTitle = "Share."
+                                    }
                                 }
                         )
-                        .animation(.easeOut(duration: 1), value: imageOffset)
+                        .animation(.easeOut(duration: 1), value: imageOffset) // soften image movement by animation
                 }
-                Image(systemName: "")
-                    .resizable()
-                    .frame(width: 20, height: 20)
+                .overlay( // put the icon on top of everything
+                    // MARK: scroll indicator icon
+                    Image(systemName: "arrow.left.and.right.circle")
+                        .font(.system(size: 44, weight: .ultraLight))
+                        .foregroundColor(.white)
+                        .offset(y: 20)
+                        .opacity(isAnimating ? 1 : 0)
+                        .animation(.easeIn(duration: 1).delay(2), value: isAnimating) // display icon with animation in a 2 sec delay
+                        .opacity(indicatorOpacity)
+                    , alignment: .bottom // place the icon at the bottom if the ZStack
+                )
                 
-                // FOOTER
+                
+                // MARK: FOOTER
                 Spacer()
                 ZStack {
-                    // WHITE CAPSULE
+                    // MARK: button whit capsule
                     Capsule()
                         .fill(.white.opacity(0.2))
                     Capsule()
                         .fill(.white.opacity(0.2))
                         .padding(8)
                     
-                    // TEXT
+                    // MARK: button text
                     Text("Get Started")
                         .font(.system(.title3, design: .rounded))
                         .fontWeight(.bold)
@@ -90,7 +119,7 @@ struct OnboardingView: View {
                         .offset(x: 20)
                     
                     
-                    // BUTTON EXTENDING RED CAPSULE
+                    // MARK: button expansing red capsule
                     HStack {
                         Capsule()
                             .fill(Color("ColorRed"))
@@ -100,7 +129,7 @@ struct OnboardingView: View {
                     }
                     
                     
-                    // BUTTON TOP CIRCLE
+                    // MARK: button top circle
                     HStack {
                         ZStack {
                             Circle()
@@ -147,6 +176,7 @@ struct OnboardingView: View {
         .onAppear(perform: {
             isAnimating = true
         })
+        .preferredColorScheme(.dark) // determines what color scheme to use for each screen / single element we put this on
     }
 }
 
