@@ -17,7 +17,8 @@ struct HomeView: View {
             
             Spacer()
             
-            // IMAGE
+            // MARK: CENTER
+            // MARK: main image
             ZStack {
                 CirclesGroupView(ShapeColor: .gray, ShapeOpacity: 0.1)
                 Image("character-2")
@@ -32,7 +33,7 @@ struct HomeView: View {
                     , value: isAnimating)
             }
             
-            // TEXT
+            // MARK: text
             Text("The time that leads to mastery is dependant on the intensity of out focus")
                 .font(.title3)
                 .fontWeight(.light)
@@ -42,9 +43,11 @@ struct HomeView: View {
             
             Spacer()
             
-            // BUTTON
+            // MARK: FOOTER
+            // MARK: button
             Button(action: {
                 withAnimation{
+                    playSound(withFile: "success", ofType: "m4a")
                     hasSeenOnboarding = false
                 }
             }) {

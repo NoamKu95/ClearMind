@@ -19,6 +19,8 @@ struct OnboardingView: View {
     @State private var indicatorOpacity : Double = 1.0
     @State private var textTitle : String = "Share."
     
+    let hapticFeedback = UINotificationFeedbackGenerator()
+    
     var body: some View {
         ZStack {
             Color("ColorBlue")
@@ -156,8 +158,11 @@ struct OnboardingView: View {
                                         if buttonOffset > entireButtonWidth / 2 {
                                             buttonOffset = entireButtonWidth - BUTTON_CIRCLE_WIDTH
                                             hasSeenOnboarding = true
+                                            playSound(withFile: "chimeup", ofType: "mp3")
+                                            hapticFeedback.notificationOccurred(.success) // vibrate in success
                                         } else {
                                             buttonOffset = 0
+                                            hapticFeedback.notificationOccurred(.warning) // vibrate in warning
                                         }
                                     }
                                 }
